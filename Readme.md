@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
 * Студент: [Владислав Пивоваров](https://up.htmlacademy.ru/ecmascript-individual/3/user/498801).
-* Наставник: `Неизвестно`.
+* Наставник: [Дмитрий Атаманов](https://htmlacademy.ru/profile/atamanov_dmitriy).
 
 ---
 
