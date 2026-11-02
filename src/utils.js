@@ -1,6 +1,4 @@
 import dayjs from 'dayjs';
-import durationPlugin from 'dayjs/plugin/duration';
-dayjs.extend(durationPlugin);
 
 // Генерация случайного числа от a до b (включая a и b)
 const getRandomInteger = (a, b) => {

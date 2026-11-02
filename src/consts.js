@@ -17,11 +17,5 @@ const DESCRIPTIONS = [
   'Phasellus eros mauris, condimentum sed nibh vitae.',
 ];
 
-const DATE_FORMAT = {
-  day: 'MMM D',
-  hoursMinutes: 'HH:mm',
-  year: 'DD/MM/YY HH:mm',
-  fullDate: 'YYYY-MM-DD',
-};
 
-export { EVENT_TYPES, CITIES, DESCRIPTIONS, DATE_FORMAT };
+export { EVENT_TYPES, CITIES, DESCRIPTIONS };

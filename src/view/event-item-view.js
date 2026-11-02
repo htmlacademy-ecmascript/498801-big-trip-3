@@ -1,6 +1,5 @@
 import { createElement } from '../render';
 import { humanizeDueDate, getDuration } from '../utils';
-import { DATE_FORMAT } from '../consts';
 
 const createOffersTemplate = (offers) => {
   if (offers.length === 0) {
@@ -11,15 +10,15 @@ const createOffersTemplate = (offers) => {
     <h4 class="visually-hidden">Offers:</h4>
     <ul class="event__selected-offers">
       ${offers
-        .map(
-          (offer) =>
-            `<li class="event__offer">
+    .map(
+      (offer) =>
+        `<li class="event__offer">
               <span class="event__offer-title">${offer.title}</span>
               &plus;&euro;&nbsp;
               <span class="event__offer-price">${offer.price}</span>
             </li>`,
-        )
-        .join('')}
+    )
+    .join('')}
     </ul>`;
 };
 
@@ -30,16 +29,16 @@ const createEventItemTemplate = (pointState) => {
 
   return /* HTML */ `<li class="trip-events__item">
     <div class="event">
-      <time class="event__date" datetime="2019-03-20">${humanizeDueDate(dateFrom, DATE_FORMAT.day)}</time>
+      <time class="event__date" datetime="2019-03-20">${humanizeDueDate(dateFrom, 'MMM D')}</time>
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon" />
       </div>
       <h3 class="event__title">${type} ${city}</h3>
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime="${dateFrom}">${humanizeDueDate(dateFrom, DATE_FORMAT.hoursMinutes)}</time>
+          <time class="event__start-time" datetime="${dateFrom}">${humanizeDueDate(dateFrom, 'HH:mm')}</time>
           &mdash;
-          <time class="event__end-time" datetime="${dateTo}">${humanizeDueDate(dateTo, DATE_FORMAT.hoursMinutes)}</time>
+          <time class="event__end-time" datetime="${dateTo}">${humanizeDueDate(dateTo, 'HH:mm')}</time>
         </p>
         <p class="event__duration">${getDuration(dateFrom, dateTo)}</p>
       </div>
