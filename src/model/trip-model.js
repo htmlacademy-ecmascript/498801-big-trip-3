@@ -2,7 +2,7 @@ import { tripPoints } from '../mock/trip-points';
 import { tripDestinations } from '../mock/trip-destinations';
 import { tripOffers } from '../mock/trip-offers';
 
-export default class tripModel {
+export default class TripModel {
   #points = tripPoints;
   #destinations = tripDestinations;
   #offers = tripOffers;

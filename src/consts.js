@@ -17,5 +17,12 @@ const DESCRIPTIONS = [
   'Phasellus eros mauris, condimentum sed nibh vitae.',
 ];
 
+const TextNoEvent = {
+  EVERYTHING: 'Click New Event to create your first point',
+  PAST: 'There are no past events now',
+  PRESENT: 'There are no present events now',
+  FUTURE: 'There are no future events now',
+};
 
-export { EVENT_TYPES, CITIES, DESCRIPTIONS };
+
+export { EVENT_TYPES, CITIES, DESCRIPTIONS, TextNoEvent };

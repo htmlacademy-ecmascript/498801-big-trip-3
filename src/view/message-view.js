@@ -1,23 +1,12 @@
-import { createElement } from '../render';
+import AbstractView from '../framework/view/abstract-view';
+import { TextNoEvent } from '../consts';
 
 const createMessageTemplate = () =>
   /* HTML */
-  '<p class="trip-events__msg">Click New Event to create your first point</p>';
+  `<p class="trip-events__msg">${TextNoEvent.EVERYTHING}</p>`;
 
-export default class MessageView {
-  getTemplate() {
+export default class MessageView extends AbstractView {
+  get template() {
     return createMessageTemplate();
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
   }
 }
