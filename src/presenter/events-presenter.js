@@ -3,8 +3,11 @@ import EventsListView from '../view/events-list-view';
 import EventItemView from '../view/event-item-view';
 import EditFormView from '../view/edit-form-view';
 import MessageView from '../view/message-view';
+import FilterView from '../view/filter-view';
+import { generateFilters } from '../mock/filter-mock.js';
 
 const eventsElement = document.querySelector('.trip-events');
+const filtersElement = document.querySelector('.trip-controls__filters');
 
 export default class TripEventsPresenter {
   #eventsContainer = null;
@@ -70,6 +73,9 @@ export default class TripEventsPresenter {
 
   #renderTripBoard () {
     const pointsLength = this.#tripModel.points.length;
+    const filters = generateFilters(this.#tripModel.points);
+
+    render(new FilterView({ filters }), filtersElement);
 
     if(pointsLength === 0) {
       render(this.#messageComponent, eventsElement);
