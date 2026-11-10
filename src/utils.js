@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { FilterType } from './consts';
 
 // Генерация случайного числа от a до b (включая a и b)
 const getRandomInteger = (a, b) => {
@@ -31,4 +32,15 @@ const getDuration = (start, end) => {
   return duration.format('mm[m]');
 };
 
-export { getRandomArrayElement, getRandomInteger, getElementById, humanizeDueDate, getDuration };
+const filter = {
+  [FilterType.EVERYTHING]: (points) => points,
+  [FilterType.FUTURE]: (points) =>
+    points.filter((point) => dayjs(point.dateFrom).isAfter(dayjs())),
+  [FilterType.PRESENT]: (points) =>
+    points.filter((point) =>
+      !dayjs(point.dateFrom).isAfter(dayjs()) && !dayjs(point.dateTo).isBefore(dayjs())),
+  [FilterType.PAST]: (points) =>
+    points.filter((point) => dayjs(point.dateTo).isBefore(dayjs())),
+};
+
+export { getRandomArrayElement, getRandomInteger, getElementById, humanizeDueDate, getDuration, filter };

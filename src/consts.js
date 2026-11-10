@@ -24,5 +24,11 @@ const TextNoEvent = {
   FUTURE: 'There are no future events now',
 };
 
+const FilterType = {
+  EVERYTHING: 'everything',
+  PAST: 'past',
+  PRESENT: 'present',
+  FUTURE: 'future',
+};
 
-export { EVENT_TYPES, CITIES, DESCRIPTIONS, TextNoEvent };
+export { EVENT_TYPES, CITIES, DESCRIPTIONS, TextNoEvent, FilterType };
