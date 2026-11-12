@@ -1,12 +1,18 @@
 import AbstractView from '../framework/view/abstract-view';
-import { TextNoEvent } from '../consts';
 
-const createMessageTemplate = () =>
+const createMessageTemplate = (message) =>
   /* HTML */
-  `<p class="trip-events__msg">${TextNoEvent.EVERYTHING}</p>`;
+  `<p class="trip-events__msg">${message}</p>`;
 
 export default class MessageView extends AbstractView {
+  #message = null;
+
+  constructor(message) {
+    super();
+    this.#message = message;
+  }
+
   get template() {
-    return createMessageTemplate();
+    return createMessageTemplate(this.#message);
   }
 }

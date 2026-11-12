@@ -1,6 +1,9 @@
 import AbstractView from '../framework/view/abstract-view';
 import { humanizeDueDate, getDuration } from '../utils';
 
+const ROLLUP_BUTTON_CLASS_NAME = 'event__rollup-btn';
+const FAVORITE_BUTTON_CLASS_NAME = 'event__favorite-btn';
+
 const createOffersTemplate = (offers) => {
   if (offers.length === 0) {
     return '';
@@ -60,8 +63,9 @@ const createEventItemTemplate = (pointState) => {
 export default class EventItemView extends AbstractView {
   #state = null;
   #onEditClick = null;
+  #onFavoriteClick = null;
 
-  constructor({ point, offers, destination, onEditClick }) {
+  constructor({ point, offers, destination, onEditClick, onFavoriteClick }) {
     super();
     this.#state = {
       point,
@@ -69,14 +73,26 @@ export default class EventItemView extends AbstractView {
       destination,
     };
     this.#onEditClick = onEditClick;
-
-    const rollupButtonElement = this.element.querySelector('.event__rollup-btn');
-    rollupButtonElement.addEventListener('click', this.#editClickHandler);
+    this.#onFavoriteClick = onFavoriteClick;
+    this.#setEventListeners();
   }
+
+  #setEventListeners = () => {
+    const rollupButtonElement = this.element.querySelector(`.${ROLLUP_BUTTON_CLASS_NAME}`);
+    const favoriteButtonElement = this.element.querySelector(`.${FAVORITE_BUTTON_CLASS_NAME}`);
+
+    rollupButtonElement.addEventListener('click', this.#editClickHandler);
+    favoriteButtonElement.addEventListener('click', this.#favoriteClickHandler);
+  };
 
   #editClickHandler = (evt) => {
     evt.preventDefault();
     this.#onEditClick();
+  };
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onFavoriteClick();
   };
 
   get template() {

@@ -1,5 +1,9 @@
 import AbstractView from '../framework/view/abstract-view';
 import { humanizeDueDate } from '../utils';
+import { capitalize } from '../helpers';
+
+const EDIT_FORM_CLASS_NAME = 'event--edit';
+const ROLLUP_BUTTON_CLASS_NAME = 'event__rollup-btn';
 
 const createEventTypeTemplate = (type, offers, id) =>
   /* HTML */
@@ -17,7 +21,7 @@ const createEventTypeTemplate = (type, offers, id) =>
           ${offers.map((offer) => `<div class="event__type-item">
             <input id="event-type-${offer.type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${offer.type}" ${offer.type === type ? 'checked' : ''} />
             <label class="event__type-label  event__type-label--${offer.type}" for="event-type-${offer.type}">
-              ${offer.type.charAt(0).toUpperCase() + offer.type.slice(1)}
+              ${capitalize(offer.type)}
             </label>
           </div>`).join('')}
 
@@ -146,12 +150,15 @@ export default class EditFormView extends AbstractView {
     this.#offersType = offersType;
     this.#onFormSubmit = onFormSubmit;
     this.#onCloseClick = onCloseClick;
+    this.#setEventListeners();
+  }
 
-    const editFormElement = this.element.querySelector('.event--edit');
-    const formCloseElement = this.element.querySelector('.event__rollup-btn');
+  #setEventListeners = () => {
+    const editFormElement = this.element.querySelector(`.${EDIT_FORM_CLASS_NAME}`);
+    const formCloseElement = this.element.querySelector(`.${ROLLUP_BUTTON_CLASS_NAME}`);
     editFormElement.addEventListener('submit', this.#formSubmitHandler);
     formCloseElement.addEventListener('click', this.#formCloseHandler);
-  }
+  };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
