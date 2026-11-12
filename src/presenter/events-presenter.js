@@ -1,10 +1,11 @@
-import { render, replace } from '../framework/render';
+import { render } from '../framework/render';
 import EventsListView from '../view/events-list-view';
-import EventItemView from '../view/event-item-view';
-import EditFormView from '../view/edit-form-view';
 import MessageView from '../view/message-view';
 import FilterView from '../view/filter-view';
 import { generateFilters } from '../mock/filter-mock.js';
+import { TextNoEvent } from '../consts';
+import PointPresenter from './point-presenter.js';
+import { updateItem } from '../utils.js';
 
 const eventsElement = document.querySelector('.trip-events');
 const filtersElement = document.querySelector('.trip-controls__filters');
@@ -12,85 +13,65 @@ const filtersElement = document.querySelector('.trip-controls__filters');
 export default class TripEventsPresenter {
   #eventsContainer = null;
   #tripModel = null;
-
   #eventsListComponent = new EventsListView();
   #eventsListElement = this.#eventsListComponent.element;
-  #messageComponent = new MessageView();
-  #editFormComponent = null;
+  #messageComponent = null;
+  #filterComponent = null;
+  #points = [];
+  #pointPresenters = new Map();
 
   constructor({ eventsContainer, tripModel }) {
     this.#eventsContainer = eventsContainer;
     this.#tripModel = tripModel;
   }
 
-  /**
-   * Метод для отрисовки точки маршрута
-   * @param {Object} point Объект с данными точки
-   */
+  #handlePointChange = (updatedPoint) => {
+    this.#points = updateItem(this.#points, updatedPoint);
+    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint);
+  };
+
+  #handleModeChange = () => {
+    this.#pointPresenters.forEach((presenter) => presenter.resetView());
+  };
+
   #renderPoint (point) {
-    const escKeyDownHandler = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        replaceFormToPoint();
-      }
-    };
-
-    const eventItemComponent = new EventItemView({
-      point,
-      offers: this.#tripModel.getOffersById(point.type, point.offers),
-      destination: this.#tripModel.getDestinationById(point.destination),
-      onEditClick: () => {
-        replacePointToForm();
-      }
+    const pointPresenter = new PointPresenter({
+      pointsListContainer: this.#eventsListElement,
+      tripModel: this.#tripModel,
+      handleDataChange: this.#handlePointChange,
+      handleModeChange: this.#handleModeChange,
     });
 
-    const editFormComponent = new EditFormView({
-      point,
-      destination: this.#tripModel.getDestinationById(point.destination),
-      destinationsAll: this.#tripModel.destinations,
-      offers: this.#tripModel.offers,
-      offersType: this.#tripModel.getOffersByType(point.type),
-      onFormSubmit: () => {
-        replaceFormToPoint();
-      },
-      onCloseClick: () => {
-        replaceFormToPoint();
-      },
-    });
-
-    function replacePointToForm() {
-      replace(editFormComponent, eventItemComponent);
-      document.addEventListener('keydown', escKeyDownHandler);
-    }
-
-    function replaceFormToPoint() {
-      replace(eventItemComponent, editFormComponent);
-      document.removeEventListener('keydown', escKeyDownHandler);
-    }
-
-    render(eventItemComponent, this.#eventsListElement);
+    this.#pointPresenters.set(point.id, pointPresenter);
+    pointPresenter.init(point);
   }
 
+  #clearPoints () {
+    this.#pointPresenters.forEach((presenter) => {
+      presenter.destroy();
+    });
+    this.#pointPresenters.clear();
+  }
+
+
   #renderTripBoard () {
-    const pointsLength = this.#tripModel.points.length;
-    const filters = generateFilters(this.#tripModel.points);
+    const filters = generateFilters(this.#points);
+    this.#messageComponent = new MessageView(TextNoEvent.EVERYTHING);
+    this.#filterComponent = new FilterView({ filters });
 
-    render(new FilterView({ filters }), filtersElement);
+    render(this.#filterComponent, filtersElement);
 
-    if(pointsLength === 0) {
+    if(this.#points.length === 0) {
       render(this.#messageComponent, eventsElement);
       return;
     }
 
     render(this.#eventsListComponent, this.#eventsContainer);
-
-    for (let i = 0; i < pointsLength; i++) {
-      const point = this.#tripModel.points[i];
-      this.#renderPoint(point);
-    }
+    this.#points.forEach((point) => this.#renderPoint(point));
   }
 
   init() {
+    this.#points = this.#tripModel.points;
     this.#renderTripBoard();
   }
 }

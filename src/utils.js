@@ -43,4 +43,7 @@ const filter = {
     points.filter((point) => dayjs(point.dateTo).isBefore(dayjs())),
 };
 
-export { getRandomArrayElement, getRandomInteger, getElementById, humanizeDueDate, getDuration, filter };
+const updateItem = (items, newItem) =>
+  items.map((item) => (item.id === newItem.id ? newItem : item));
+
+export { getRandomArrayElement, getRandomInteger, getElementById, humanizeDueDate, getDuration, filter, updateItem };
