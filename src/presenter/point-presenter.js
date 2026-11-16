@@ -1,5 +1,5 @@
 import { render, replace, remove } from '../framework/render';
-import EventItemView from '../view/event-item-view';
+import PointItemView from '../view/point-item-view';
 import EditFormView from '../view/edit-form-view';
 
 const Mode = {
@@ -31,7 +31,7 @@ export default class PointPresenter {
     const prevPointComponent = this.#pointComponent;
     const prevEditFormComponent = this.#editFormComponent;
 
-    this.#pointComponent = new EventItemView({
+    this.#pointComponent = new PointItemView({
       point,
       offers: this.#tripModel.getOffersById(point.type, point.offers),
       destination: this.#tripModel.getDestinationById(point.destination),
@@ -91,9 +91,9 @@ export default class PointPresenter {
     this.#mode = Mode.DEFAULT;
   }
 
-  #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape') {
-      evt.preventDefault();
+  #escKeyDownHandler = (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
       this.#replaceFormToPoint();
     }
   };

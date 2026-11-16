@@ -46,4 +46,18 @@ const filter = {
 const updateItem = (items, newItem) =>
   items.map((item) => (item.id === newItem.id ? newItem : item));
 
-export { getRandomArrayElement, getRandomInteger, getElementById, humanizeDueDate, getDuration, filter, updateItem };
+// Сортировки:
+// от старых к новым по дате начала (по умолчанию)
+const sortByDay = (a, b) => dayjs(a.dateFrom).diff(dayjs(b.dateFrom));
+
+// по длительности, от самой долгой
+const sortByTime = (a, b) => {
+  const durationA = dayjs(a.dateTo).diff(dayjs(a.dateFrom));
+  const durationB = dayjs(b.dateTo).diff(dayjs(b.dateFrom));
+  return durationB - durationA;
+};
+
+// по цене, от самой дорогой
+const sortByPrice = (a, b) => b.basePrice - a.basePrice;
+
+export { getRandomArrayElement, getRandomInteger, getElementById, humanizeDueDate, getDuration, filter, updateItem, sortByDay, sortByTime, sortByPrice };

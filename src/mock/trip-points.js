@@ -6,16 +6,6 @@ const MAX_PRICE = 3000;
 
 const tripPoints = [
   {
-    id: 'f4b62099-293f-4c3d-a702-94eec4a28081',
-    basePrice: getRandomInteger(MIN_PRICE, MAX_PRICE),
-    dateFrom: '2026-10-30T00:57:56.845Z',
-    dateTo: '2026-10-31T15:55:56.845Z',
-    destination: 'bfa5cb75-a1fe-4b77-a83c-0e528e910e01',
-    isFavorite: Boolean(getRandomInteger(0, 1)),
-    offers: ['b4c3e4e6-9053-42ce-b747-e281314baa31', 'b4c3e4e6-9053-42ce-b747-e281314baa34'],
-    type: getRandomArrayElement(EVENT_TYPES),
-  },
-  {
     id: 'f4b62099-293f-4c3d-a702-94eec4a28082',
     basePrice: getRandomInteger(MIN_PRICE, MAX_PRICE),
     dateFrom: '2026-11-01T23:11:56.845Z',
@@ -33,6 +23,16 @@ const tripPoints = [
     destination: 'bfa5cb75-a1fe-4b77-a83c-0e528e910e03',
     isFavorite: Boolean(getRandomInteger(0, 1)),
     offers: ['b4c3e4e6-9053-42ce-b747-e281314baa33', 'b4c3e4e6-9053-42ce-b747-e281314baa34'],
+    type: getRandomArrayElement(EVENT_TYPES),
+  },
+  {
+    id: 'f4b62099-293f-4c3d-a702-94eec4a28081',
+    basePrice: getRandomInteger(MIN_PRICE, MAX_PRICE),
+    dateFrom: '2026-10-30T00:57:56.845Z',
+    dateTo: '2026-10-31T15:55:56.845Z',
+    destination: 'bfa5cb75-a1fe-4b77-a83c-0e528e910e01',
+    isFavorite: Boolean(getRandomInteger(0, 1)),
+    offers: ['b4c3e4e6-9053-42ce-b747-e281314baa31', 'b4c3e4e6-9053-42ce-b747-e281314baa34'],
     type: getRandomArrayElement(EVENT_TYPES),
   },
   {
