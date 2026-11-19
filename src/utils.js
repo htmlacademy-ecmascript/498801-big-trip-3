@@ -20,16 +20,21 @@ const getElementById = (idNumber, elements) => {
 
 const humanizeDueDate = (dueDate, format) => (dueDate ? dayjs(dueDate).format(format) : '');
 
-const getDuration = (start, end) => {
-  const duration = dayjs.duration(dayjs(end).diff(dayjs(start)));
-  if (duration.days()) {
-    return duration.format('DD[d] HH[h] mm[m]');
-  }
-  if (duration.hours()) {
-    return duration.format('HH[h] mm[m]');
-  }
+const pad = (value) => String(value).padStart(2, '0');
 
-  return duration.format('mm[m]');
+const getDuration = (dateFrom, dateTo) => {
+  const diff = dayjs(dateTo).diff(dayjs(dateFrom), 'minute');
+  const days = Math.floor(diff / 1440);
+  const hours = Math.floor((diff % 1440) / 60);
+  const minutes = diff % 60;
+
+  if (days > 0) {
+    return `${pad(days)}D ${pad(hours)}H ${pad(minutes)}M`;
+  }
+  if (hours > 0) {
+    return `${pad(hours)}H ${pad(minutes)}M`;
+  }
+  return `${pad(minutes)}M`;
 };
 
 const filter = {
