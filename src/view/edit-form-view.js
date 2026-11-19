@@ -1,6 +1,8 @@
 import { humanizeDueDate } from '../utils';
 import { capitalize } from '../helpers';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 const EDIT_FORM_CLASS_NAME = 'event--edit';
 const ROLLUP_BUTTON_CLASS_NAME = 'event__rollup-btn';
@@ -8,6 +10,7 @@ const TYPE_FIELDSET_CLASS_NAME = 'event__type-group';
 const DESTINATION_INPUT_CLASS_NAME = 'event__input--destination';
 const PRICE_INPUT_CLASS_NAME = 'event__input--price';
 const AVAILABLE_OFFERS_CLASS_NAME = 'event__available-offers';
+const INPUTS_TIME_CLASS_NAME = 'event__input--time';
 
 const createEventTypeTemplate = (type, offers, id) =>
   /* HTML */
@@ -141,6 +144,8 @@ export default class EditFormView extends AbstractStatefulView {
   #offers = null;
   #onFormSubmit = null;
   #onCloseClick = null;
+  #datepickerFrom = null;
+  #datepickerTo = null;
 
   constructor({ point, destination, destinationsAll, offers, offersType, onFormSubmit, onCloseClick }) {
     super();
@@ -151,6 +156,60 @@ export default class EditFormView extends AbstractStatefulView {
     this.#onCloseClick = onCloseClick;
     this._restoreHandlers();
   }
+
+  removeElement() {
+    this.#destroyDatepickers();
+    super.removeElement();
+  }
+
+  #destroyDatepickers() {
+    this.#datepickerFrom?.destroy();
+    this.#datepickerTo?.destroy();
+    this.#datepickerFrom = null;
+    this.#datepickerTo = null;
+  }
+
+  #setDatepickers() {
+    const inputTimeElements = this.element.querySelectorAll(`.${INPUTS_TIME_CLASS_NAME}`);
+    const [startInputElement, endInputElement] = inputTimeElements;
+
+    const DATEPICKER_CONFIG = {
+      dateFormat: 'd/m/y H:i',
+      enableTime: true,
+      'time_24hr': true,
+    };
+
+    this.#datepickerFrom = flatpickr(startInputElement, {
+      ...DATEPICKER_CONFIG,
+      defaultDate: this._state.dateFrom,
+      maxDate: this._state.dateTo,
+      onChange: this.#dateFromChangeHandler,
+    });
+
+    this.#datepickerTo = flatpickr(endInputElement, {
+      ...DATEPICKER_CONFIG,
+      defaultDate: this._state.dateTo,
+      minDate: this._state.dateFrom,
+      onChange: this.#dateToChangeHandler,
+    });
+  }
+
+  #dateFromChangeHandler = ([userDate]) => {
+    if (!userDate) {
+      return;
+    }
+
+    this._setState({ dateFrom: userDate.toISOString() });
+    this.#datepickerTo.set('minDate', userDate);
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    if (!userDate) {
+      return;
+    }
+    this._setState({ dateTo: userDate.toISOString() });
+    this.#datepickerFrom.set('maxDate', userDate);
+  };
 
   reset(point, destination, offersType) {
     this.updateElement(EditFormView.parsePointToState(point, destination, offersType));
@@ -170,6 +229,7 @@ export default class EditFormView extends AbstractStatefulView {
     destinationInputElement.addEventListener('change', this.#destinationChangeHandler);
     priceInputElement.addEventListener('input', this.#priceChangeHandler);
     availableOffersElement?.addEventListener('change', this.#offerChangeHandler);
+    this.#setDatepickers();
   }
 
   #formSubmitHandler = (evt) => {
@@ -186,7 +246,7 @@ export default class EditFormView extends AbstractStatefulView {
     const targetType = evt.target.value;
     const typeOffers = this.#offers.filter((item) => item.type === targetType);
 
-    // Выбранные офферы обнуляем
+    // Выбранные офферы обнуляем при смене типа
     this.updateElement({
       type: targetType,
       offersType: typeOffers[0],
@@ -194,6 +254,7 @@ export default class EditFormView extends AbstractStatefulView {
     });
   };
 
+  // Сохраняем выбранные офферы даже при смене города
   #offerChangeHandler = () => {
     const checkedOffers = [...this.element.querySelectorAll('.event__offer-checkbox:checked')]
       .map((element) => element.dataset.offerId);
@@ -219,11 +280,18 @@ export default class EditFormView extends AbstractStatefulView {
   };
 
   #priceChangeHandler = (evt) => {
-    const targetPrice = evt.target.value;
+    let targetPrice = evt.target.value;
 
-    this._setState({
-      basePrice: targetPrice
-    });
+    if(!Number(targetPrice)) {
+      evt.target.value = targetPrice.slice(0, -1);
+      targetPrice = evt.target.value;
+    }
+
+    if(Number(targetPrice)) {
+      this._setState({
+        basePrice: targetPrice
+      });
+    }
   };
 
   static parsePointToState(point, destination, offersType) {
