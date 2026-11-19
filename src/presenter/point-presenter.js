@@ -46,7 +46,7 @@ export default class PointPresenter {
       offers: this.#tripModel.offers,
       offersType: this.#tripModel.getOffersByType(point.type),
       onFormSubmit: this.#handleFormSubmit,
-      onCloseClick: this.#handleFormSubmit,
+      onCloseClick: this.#handleCloseClick,
     });
 
     if (prevPointComponent === null || prevEditFormComponent === null) {
@@ -74,6 +74,7 @@ export default class PointPresenter {
   // Вызываем из events-presenter.js
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
+      this.#formReset();
       this.#replaceFormToPoint();
     }
   }
@@ -91,17 +92,32 @@ export default class PointPresenter {
     this.#mode = Mode.DEFAULT;
   }
 
-  #escKeyDownHandler = (event) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
+  #formReset() {
+    this.#editFormComponent.reset(
+      this.#point,
+      this.#tripModel.getDestinationById(this.#point.destination),
+      this.#tripModel.getOffersByType(this.#point.type),
+    );
+  }
+
+  #escKeyDownHandler = (evt) => {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      this.#formReset();
       this.#replaceFormToPoint();
     }
   };
 
   #handleEditClick = () => this.#replacePointToForm();
-  #handleFormSubmit = () => {
+
+  #handleFormSubmit = (point) => {
     this.#replaceFormToPoint();
-    this.#handleDataChange(this.#point);
+    this.#handleDataChange(point);
+  };
+
+  #handleCloseClick = () => {
+    this.#formReset();
+    this.#replaceFormToPoint();
   };
 
   #handleFavoriteClick = () => {
