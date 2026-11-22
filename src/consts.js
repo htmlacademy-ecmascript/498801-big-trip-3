@@ -17,18 +17,18 @@ const DESCRIPTIONS = [
   'Phasellus eros mauris, condimentum sed nibh vitae.',
 ];
 
-const TextNoEvent = {
-  EVERYTHING: 'Click New Event to create your first point',
-  PAST: 'There are no past events now',
-  PRESENT: 'There are no present events now',
-  FUTURE: 'There are no future events now',
-};
-
 const FilterType = {
   EVERYTHING: 'everything',
   PAST: 'past',
   PRESENT: 'present',
   FUTURE: 'future',
+};
+
+const TextNoEvent = {
+  [FilterType.EVERYTHING]: 'Click New Event to create your first point',
+  [FilterType.PAST]: 'There are no past events now',
+  [FilterType.PRESENT]: 'There are no present events now',
+  [FilterType.FUTURE]: 'There are no future events now',
 };
 
 const SortType = {
@@ -39,4 +39,17 @@ const SortType = {
   OFFERS: 'offers',
 };
 
-export { EVENT_TYPES, CITIES, DESCRIPTIONS, TextNoEvent, FilterType, SortType };
+const UserAction = {
+  UPDATE_POINT: 'UPDATE_POINT',
+  ADD_POINT: 'ADD_POINT',
+  DELETE_POINT: 'DELETE_POINT',
+};
+
+// что перерисовывать после изменения модели
+const UpdateType = {
+  PATCH: 'PATCH', // обновилась одна точка - перерисовать только ее
+  MINOR: 'MINOR', // изменился список - перерисовать список
+  MAJOR: 'MAJOR', // изменился фильтр - перерисовать все и сбросить сортировку
+};
+
+export { EVENT_TYPES, CITIES, DESCRIPTIONS, TextNoEvent, FilterType, SortType, UserAction, UpdateType };
