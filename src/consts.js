@@ -50,6 +50,8 @@ const UpdateType = {
   PATCH: 'PATCH', // обновилась одна точка - перерисовать только ее
   MINOR: 'MINOR', // изменился список - перерисовать список
   MAJOR: 'MAJOR', // изменился фильтр - перерисовать все и сбросить сортировку
+  INIT: 'INIT',
+  ERROR: 'ERROR'
 };
 
 export { EVENT_TYPES, CITIES, DESCRIPTIONS, TextNoEvent, FilterType, SortType, UserAction, UpdateType };

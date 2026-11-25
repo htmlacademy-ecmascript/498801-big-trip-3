@@ -1,7 +1,9 @@
-import { render, remove } from '../framework/render.js';
+import { render, remove, RenderPosition } from '../framework/render.js';
 import PointsListView from '../view/points-list-view.js';
 import MessageView from '../view/message-view.js';
 import SortView from '../view/sort-view.js';
+import LoadingView from '../view/loading-view.js';
+import ErrorLoadingView from '../view/error-loading-view.js';
 import PointPresenter from './point-presenter.js';
 import NewPointPresenter from './new-point-presenter.js';
 import { TextNoEvent, SortType, UserAction, UpdateType, FilterType } from '../consts.js';
@@ -15,10 +17,14 @@ export default class PointsPresenter {
   #eventsListComponent = new PointsListView();
   #messageComponent = null;
   #sortComponent = null;
+  #loadingComponent = new LoadingView();
+  #errorLoadingComponent = new ErrorLoadingView();
 
   #pointPresenters = new Map();
   #currentSortType = SortType.DAY;
   #isCreating = false;
+  #isLoading = true;
+  #isErrorLoading = false;
 
   #newPointPresenter = null;
   #handleNewPointClose = null;
@@ -105,8 +111,27 @@ export default class PointsPresenter {
         this.#clearBoard({ resetSortType: true });
         this.#renderBoard();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        break;
+      case UpdateType.ERROR:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#isErrorLoading = true;
+        this.#renderBoard();
+        break;
     }
   };
+
+  #renderLoading() {
+    render(this.#loadingComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
+  }
+
+  #renderErrorLoading() {
+    render(this.#errorLoadingComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
+  }
 
   #handleSortTypeChange = (sortType) => {
     if (this.#currentSortType === sortType) {
@@ -145,6 +170,16 @@ export default class PointsPresenter {
   #renderBoard() {
     const points = this.points;
 
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
+    if (this.#isErrorLoading) {
+      this.#renderErrorLoading();
+      return;
+    }
+
     if (points.length === 0 && !this.#isCreating) {
       this.#renderMessage();
       return;
@@ -164,6 +199,8 @@ export default class PointsPresenter {
 
     remove(this.#sortComponent);
     remove(this.#messageComponent);
+    remove(this.#loadingComponent); // ?????
+
     this.#sortComponent = null;
     this.#messageComponent = null;
 
