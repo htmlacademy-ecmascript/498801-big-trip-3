@@ -15,16 +15,16 @@ const createBlankPoint = () => ({
 export default class NewPointPresenter {
   #container = null;
   #tripModel = null;
-  #handleDataChange = null;
-  #handleDestroy = null;
+  #onDataChange = null;
+  #onDestroy = null;
   #formComponent = null;
   #isRequestPending = false;
 
-  constructor({ container, tripModel, handleDataChange, handleDestroy }) {
+  constructor({ container, tripModel, onDataChange, onDestroy }) {
     this.#container = container;
     this.#tripModel = tripModel;
-    this.#handleDataChange = handleDataChange;
-    this.#handleDestroy = handleDestroy;
+    this.#onDataChange = onDataChange;
+    this.#onDestroy = onDestroy;
   }
 
   init() {
@@ -40,8 +40,8 @@ export default class NewPointPresenter {
       destinationsAll: this.#tripModel.destinations,
       offers: this.#tripModel.offers,
       offersType: this.#tripModel.getOffersByType(point.type),
-      onFormSubmit: this.#handleFormSubmit,
-      onDeleteClick: this.#handleCancelClick,
+      onFormSubmit: this.#formSubmitHandler,
+      onDeleteClick: this.#cancelClickHandler,
     });
 
     render(this.#formComponent, this.#container, RenderPosition.AFTERBEGIN);
@@ -57,7 +57,7 @@ export default class NewPointPresenter {
     this.#formComponent = null;
     this.#isRequestPending = false;
     document.removeEventListener('keydown', this.#escKeyDownHandler);
-    this.#handleDestroy();
+    this.#onDestroy();
   }
 
   setSaving() {
@@ -80,11 +80,15 @@ export default class NewPointPresenter {
     this.#formComponent.shake();
   }
 
-  #handleFormSubmit = (point) => {
-    this.#handleDataChange(UserAction.ADD_POINT, UpdateType.MINOR, point);
+  #formSubmitHandler = (point) => {
+    if (this.#isRequestPending) {
+      return;
+    }
+
+    this.#onDataChange(UserAction.ADD_POINT, UpdateType.MINOR, point);
   };
 
-  #handleCancelClick = () => {
+  #cancelClickHandler = () => {
     if (this.#isRequestPending) {
       return;
     }

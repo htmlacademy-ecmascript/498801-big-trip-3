@@ -1,18 +1,18 @@
-import { render, replace, remove } from '../framework/render';
-import PointItemView from '../view/point-item-view';
-import EditFormView from '../view/edit-form-view';
-import { UserAction, UpdateType, ESCAPE_KEY } from '../consts';
+import { render, replace, remove } from '../framework/render.js';
+import PointItemView from '../view/point-item-view.js';
+import EditFormView from '../view/edit-form-view.js';
+import { UserAction, UpdateType, ESCAPE_KEY } from '../consts.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING'
+  EDITING: 'EDITING',
 };
 
 export default class PointPresenter {
   #pointsListContainer = null;
   #tripModel = null;
-  #handleDataChange = null;
-  #handleModeChange = null;
+  #onDataChange = null;
+  #onModeChange = null;
 
   #point = null;
   #pointComponent = null;
@@ -20,39 +20,37 @@ export default class PointPresenter {
   #mode = Mode.DEFAULT;
   #isRequestPending = false;
 
-  constructor({ pointsListContainer, tripModel, handleDataChange, handleModeChange }) {
+  constructor({ pointsListContainer, tripModel, onDataChange, onModeChange }) {
     this.#pointsListContainer = pointsListContainer;
     this.#tripModel = tripModel;
-    this.#handleDataChange = handleDataChange;
-    this.#handleModeChange = handleModeChange;
+    this.#onDataChange = onDataChange;
+    this.#onModeChange = onModeChange;
   }
 
   init(point) {
     this.#point = point;
 
-    const prevPointComponent = this.#pointComponent;
-    const prevEditFormComponent = this.#editFormComponent;
+    const previousPointComponent = this.#pointComponent;
+    const previousEditFormComponent = this.#editFormComponent;
 
     this.#pointComponent = this.#createPointComponent();
 
-    if (prevPointComponent === null) {
+    if (previousPointComponent === null) {
       render(this.#pointComponent, this.#pointsListContainer);
       return;
     }
 
     if (this.#mode === Mode.DEFAULT) {
-      replace(this.#pointComponent, prevPointComponent);
+      replace(this.#pointComponent, previousPointComponent);
     }
 
-    // Точка перерисовалась, пока была открыта форма: форму пересоздаём с новыми данными,
-    // а новая карточка уже ждёт в #pointComponent
     if (this.#mode === Mode.EDITING) {
       this.#editFormComponent = this.#createEditFormComponent();
-      replace(this.#editFormComponent, prevEditFormComponent);
-      remove(prevEditFormComponent);
+      replace(this.#editFormComponent, previousEditFormComponent);
+      remove(previousEditFormComponent);
     }
 
-    remove(prevPointComponent);
+    remove(previousPointComponent);
   }
 
   destroy() {
@@ -84,7 +82,6 @@ export default class PointPresenter {
   setAborting() {
     this.#isRequestPending = false;
 
-    // звёздочка: форма закрыта, трясём саму точку
     if (this.#mode === Mode.DEFAULT) {
       this.#pointComponent.shake();
       return;
@@ -103,8 +100,8 @@ export default class PointPresenter {
       point: this.#point,
       offers: this.#tripModel.getOffersById(this.#point.type, this.#point.offers),
       destination: this.#tripModel.getDestinationById(this.#point.destination),
-      onEditClick: this.#handleEditClick,
-      onFavoriteClick: this.#handleFavoriteClick,
+      onEditClick: this.#editClickHandler,
+      onFavoriteClick: this.#favoriteClickHandler,
     });
   }
 
@@ -115,14 +112,14 @@ export default class PointPresenter {
       destinationsAll: this.#tripModel.destinations,
       offers: this.#tripModel.offers,
       offersType: this.#tripModel.getOffersByType(this.#point.type),
-      onFormSubmit: this.#handleFormSubmit,
-      onCloseClick: this.#handleCloseClick,
-      onDeleteClick: this.#handleDeleteClick,
+      onFormSubmit: this.#formSubmitHandler,
+      onCloseClick: this.#closeClickHandler,
+      onDeleteClick: this.#deleteClickHandler,
     });
   }
 
   #replacePointToForm() {
-    this.#handleModeChange();
+    this.#onModeChange();
     this.#editFormComponent = this.#createEditFormComponent();
     replace(this.#editFormComponent, this.#pointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
@@ -149,9 +146,11 @@ export default class PointPresenter {
     }
   };
 
-  #handleEditClick = () => this.#replacePointToForm();
+  #editClickHandler = () => {
+    this.#replacePointToForm();
+  };
 
-  #handleCloseClick = () => {
+  #closeClickHandler = () => {
     if (this.#isRequestPending) {
       return;
     }
@@ -159,16 +158,24 @@ export default class PointPresenter {
     this.#replaceFormToPoint();
   };
 
-  #handleFormSubmit = (point) => {
-    this.#handleDataChange(UserAction.UPDATE_POINT, UpdateType.MINOR, point);
+  #formSubmitHandler = (point) => {
+    if (this.#isRequestPending) {
+      return;
+    }
+
+    this.#onDataChange(UserAction.UPDATE_POINT, UpdateType.MINOR, point);
   };
 
-  #handleDeleteClick = (point) => {
-    this.#handleDataChange(UserAction.DELETE_POINT, UpdateType.MINOR, point);
+  #deleteClickHandler = (point) => {
+    if (this.#isRequestPending) {
+      return;
+    }
+
+    this.#onDataChange(UserAction.DELETE_POINT, UpdateType.MINOR, point);
   };
 
-  #handleFavoriteClick = () => {
-    this.#handleDataChange(
+  #favoriteClickHandler = () => {
+    this.#onDataChange(
       UserAction.UPDATE_POINT,
       UpdateType.PATCH,
       { ...this.#point, isFavorite: !this.#point.isFavorite },

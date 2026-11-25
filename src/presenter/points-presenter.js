@@ -33,28 +33,28 @@ export default class PointsPresenter {
   #isErrorLoading = false;
 
   #newPointPresenter = null;
-  #handleNewPointClose = null;
+  #onNewPointClose = null;
 
   #uiBlocker = new UiBlocker({
     lowerLimit: TimeLimit.LOWER_LIMIT,
     upperLimit: TimeLimit.UPPER_LIMIT,
   });
 
-  constructor({ eventsContainer, tripModel, filterModel, handleNewPointClose }) {
+  constructor({ eventsContainer, tripModel, filterModel, onNewPointClose }) {
     this.#eventsContainer = eventsContainer;
     this.#tripModel = tripModel;
     this.#filterModel = filterModel;
 
-    this.#tripModel.addObserver(this.#handleModelEvent);
-    this.#filterModel.addObserver(this.#handleModelEvent);
+    this.#tripModel.addObserver(this.#modelEventHandler);
+    this.#filterModel.addObserver(this.#modelEventHandler);
 
-    this.#handleNewPointClose = handleNewPointClose;
+    this.#onNewPointClose = onNewPointClose;
 
     this.#newPointPresenter = new NewPointPresenter({
       container: this.#eventsListComponent.element,
       tripModel,
-      handleDataChange: this.#handleViewAction,
-      handleDestroy: this.#handleNewPointDestroy,
+      onDataChange: this.#viewActionHandler,
+      onDestroy: this.#newPointDestroyHandler,
     });
   }
 
@@ -78,7 +78,7 @@ export default class PointsPresenter {
   createPoint() {
     this.#isCreating = true;
     this.#currentSortType = SortType.DAY;
-    this.#handleModeChange();
+    this.#modeChangeHandler();
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this.#newPointPresenter.init();
   }
@@ -94,7 +94,7 @@ export default class PointsPresenter {
   #renderSort() {
     this.#sortComponent = new SortView({
       currentSortType: this.#currentSortType,
-      onSortTypeChange: this.#handleSortTypeChange,
+      onSortTypeChange: this.#sortTypeChangeHandler,
     });
     render(this.#sortComponent, this.#eventsContainer);
   }
@@ -108,8 +108,8 @@ export default class PointsPresenter {
     const pointPresenter = new PointPresenter({
       pointsListContainer: this.#eventsListComponent.element,
       tripModel: this.#tripModel,
-      handleDataChange: this.#handleViewAction,
-      handleModeChange: this.#handleModeChange,
+      onDataChange: this.#viewActionHandler,
+      onModeChange: this.#modeChangeHandler,
     });
 
     this.#pointPresenters.set(point.id, pointPresenter);
@@ -168,21 +168,21 @@ export default class PointsPresenter {
     remove(this.#loadingComponent);
   }
 
-  #handleNewPointDestroy = () => {
+  #newPointDestroyHandler = () => {
     this.#isCreating = false;
-    this.#handleNewPointClose();
+    this.#onNewPointClose();
 
     if (this.points.length === 0) {
       this.#renderMessage();
     }
   };
 
-  #handleModeChange = () => {
+  #modeChangeHandler = () => {
     this.#newPointPresenter.destroy();
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   };
 
-  #handleViewAction = async (actionType, updateType, update) => {
+  #viewActionHandler = async (actionType, updateType, update) => {
     const presenter = actionType === UserAction.ADD_POINT
       ? this.#newPointPresenter
       : this.#pointPresenters.get(update.id);
@@ -211,7 +211,7 @@ export default class PointsPresenter {
     }
   };
 
-  #handleModelEvent = (updateType, data) => {
+  #modelEventHandler = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
         this.#pointPresenters.get(data.id)?.init(data);
@@ -234,7 +234,7 @@ export default class PointsPresenter {
     }
   };
 
-  #handleSortTypeChange = (sortType) => {
+  #sortTypeChangeHandler = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
     }

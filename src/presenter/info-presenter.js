@@ -5,21 +5,22 @@ import { sortByDay, getRouteCities, getTripDates } from '../utils.js';
 export default class InfoPresenter {
   #container = null;
   #tripModel = null;
+
   #infoComponent = null;
 
   constructor({ container, tripModel }) {
     this.#container = container;
     this.#tripModel = tripModel;
 
-    this.#tripModel.addObserver(this.#handleModelEvent);
+    this.#tripModel.addObserver(this.#modelEventHandler);
   }
 
   init() {
     const points = this.#tripModel.points.sort(sortByDay);
-    const prevInfoComponent = this.#infoComponent;
+    const previousInfoComponent = this.#infoComponent;
 
     if (points.length === 0) {
-      remove(prevInfoComponent);
+      remove(previousInfoComponent);
       this.#infoComponent = null;
       return;
     }
@@ -34,13 +35,13 @@ export default class InfoPresenter {
       cost: this.#getTotalCost(points),
     });
 
-    if (prevInfoComponent === null) {
+    if (previousInfoComponent === null) {
       render(this.#infoComponent, this.#container, RenderPosition.AFTERBEGIN);
       return;
     }
 
-    replace(this.#infoComponent, prevInfoComponent);
-    remove(prevInfoComponent);
+    replace(this.#infoComponent, previousInfoComponent);
+    remove(previousInfoComponent);
   }
 
   #getTotalCost(points) {
@@ -53,7 +54,7 @@ export default class InfoPresenter {
     }, 0);
   }
 
-  #handleModelEvent = () => {
+  #modelEventHandler = () => {
     this.init();
   };
 }
