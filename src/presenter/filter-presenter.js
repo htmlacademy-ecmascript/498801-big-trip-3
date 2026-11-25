@@ -24,7 +24,7 @@ export default class FilterPresenter {
     this.#filterComponent = new FilterView({
       filters: generateFilters(this.#tripModel.points),
       currentFilterType: this.#filterModel.filter,
-      handleFilterTypeChange: this.#handleFilterTypeChange,
+      onFilterTypeChange: this.#handleFilterTypeChange,
     });
 
     if (prevFilterComponent === null) {
@@ -44,6 +44,7 @@ export default class FilterPresenter {
     if (this.#filterModel.filter === filterType) {
       return;
     }
+
     this.#filterModel.setFilter(UpdateType.MAJOR, filterType);
   };
 }

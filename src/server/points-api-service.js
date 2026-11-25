@@ -1,5 +1,5 @@
-import ApiService from '../framework/api-service';
-import { adaptToServer } from './adapter-service';
+import ApiService from '../framework/api-service.js';
+import { adaptToServer } from './adapter-service.js';
 
 const Method = {
   GET: 'GET',

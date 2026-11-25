@@ -1,9 +1,9 @@
 import { render, remove, RenderPosition } from '../framework/render.js';
 import EditFormView from '../view/edit-form-view.js';
-import { UserAction, UpdateType } from '../consts.js';
+import { UserAction, UpdateType, DEFAULT_POINT_TYPE, ESCAPE_KEY } from '../consts.js';
 
 const createBlankPoint = () => ({
-  type: 'flight',
+  type: DEFAULT_POINT_TYPE,
   destination: null,
   dateFrom: null,
   dateTo: null,
@@ -18,6 +18,7 @@ export default class NewPointPresenter {
   #handleDataChange = null;
   #handleDestroy = null;
   #formComponent = null;
+  #isRequestPending = false;
 
   constructor({ container, tripModel, handleDataChange, handleDestroy }) {
     this.#container = container;
@@ -54,15 +55,23 @@ export default class NewPointPresenter {
 
     remove(this.#formComponent);
     this.#formComponent = null;
+    this.#isRequestPending = false;
     document.removeEventListener('keydown', this.#escKeyDownHandler);
     this.#handleDestroy();
   }
 
   setSaving() {
-    this.#formComponent?.updateElement({ isDisabled: true, isSaving: true });
+    if (this.#formComponent === null) {
+      return;
+    }
+
+    this.#isRequestPending = true;
+    this.#formComponent.updateElement({ isDisabled: true, isSaving: true });
   }
 
   setAborting() {
+    this.#isRequestPending = false;
+
     if (this.#formComponent === null) {
       return;
     }
@@ -76,11 +85,19 @@ export default class NewPointPresenter {
   };
 
   #handleCancelClick = () => {
+    if (this.#isRequestPending) {
+      return;
+    }
+
     this.destroy();
   };
 
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape') {
+    if (this.#isRequestPending) {
+      return;
+    }
+
+    if (evt.key === ESCAPE_KEY) {
       evt.preventDefault();
       this.destroy();
     }

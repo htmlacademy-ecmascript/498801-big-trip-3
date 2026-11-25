@@ -1,14 +1,12 @@
-import dayjs from 'dayjs';
-import durationPlugin from 'dayjs/plugin/duration';
-import { render, RenderPosition } from './framework/render';
-import InfoView from './view/info-view';
-import PointsPresenter from './presenter/points-presenter';
+import { render } from './framework/render.js';
+import PointsPresenter from './presenter/points-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
-import TripModel from './model/trip-model';
+import InfoPresenter from './presenter/info-presenter.js';
+import TripModel from './model/trip-model.js';
 import FilterModel from './model/filter-model.js';
 import PointsApiService from './server/points-api-service.js';
-import { UpdateType } from './consts';
-dayjs.extend(durationPlugin);
+import NewPointButtonView from './view/new-point-button-view.js';
+import { UpdateType } from './consts.js';
 
 const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
 const AUTHORIZATION = 'Basic 666zelenka';
@@ -16,24 +14,17 @@ const AUTHORIZATION = 'Basic 666zelenka';
 const tripMainElement = document.querySelector('.trip-main');
 const eventsElement = document.querySelector('.trip-events');
 const filtersElement = document.querySelector('.trip-controls__filters');
-const newPointButton = document.querySelector('.trip-main__event-add-btn');
 
-newPointButton.disabled = true;
-
+const newPointButtonComponent = new NewPointButtonView();
 const service = new PointsApiService(END_POINT, AUTHORIZATION);
-const tripModel = new TripModel({
-  pointsApiService: service
-});
-
+const tripModel = new TripModel({ pointsApiService: service });
 const filterModel = new FilterModel();
 
 const pointsPresenter = new PointsPresenter({
   eventsContainer: eventsElement,
   tripModel,
   filterModel,
-  handleNewPointClose: () => {
-    newPointButton.disabled = false;
-  },
+  handleNewPointClose: () => newPointButtonComponent.setDisabled(false),
 });
 
 const filterPresenter = new FilterPresenter({
@@ -42,19 +33,26 @@ const filterPresenter = new FilterPresenter({
   tripModel,
 });
 
-newPointButton.addEventListener('click', () => {
-  newPointButton.disabled = true;
+const infoPresenter = new InfoPresenter({
+  container: tripMainElement,
+  tripModel,
+});
+
+newPointButtonComponent.setClickHandler(() => {
+  newPointButtonComponent.setDisabled(true);
   pointsPresenter.createPoint();
 });
 
-render(new InfoView(), tripMainElement, RenderPosition.AFTERBEGIN);
-
 tripModel.addObserver((updateType) => {
   if (updateType === UpdateType.INIT) {
-    newPointButton.disabled = false;
+    newPointButtonComponent.setDisabled(false);
   }
 });
 
+newPointButtonComponent.setDisabled(true);
+render(newPointButtonComponent, tripMainElement);
+
 filterPresenter.init();
 pointsPresenter.init();
+infoPresenter.init();
 tripModel.init();

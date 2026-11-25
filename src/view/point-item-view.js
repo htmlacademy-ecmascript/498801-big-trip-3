@@ -1,8 +1,10 @@
-import AbstractView from '../framework/view/abstract-view';
-import { humanizeDueDate, getDuration } from '../utils';
+import AbstractView from '../framework/view/abstract-view.js';
+import { humanizeDueDate, getDuration, capitalize, escapeHtml } from '../utils.js';
+import { DateFormat } from '../consts.js';
 
 const ROLLUP_BUTTON_CLASS_NAME = 'event__rollup-btn';
 const FAVORITE_BUTTON_CLASS_NAME = 'event__favorite-btn';
+const FAVORITE_ACTIVE_CLASS_NAME = 'event__favorite-btn--active';
 
 const createOffersTemplate = (offers) => {
   if (offers.length === 0) {
@@ -16,40 +18,40 @@ const createOffersTemplate = (offers) => {
     .map(
       (offer) =>
         `<li class="event__offer">
-              <span class="event__offer-title">${offer.title}</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">${offer.price}</span>
+              <span class="event__offer-title">${escapeHtml(offer.title)}</span>
+              &plus;&euro;
+              <span class="event__offer-price">${escapeHtml(offer.price)}</span>
             </li>`,
     )
     .join('')}
     </ul>`;
 };
 
-const createEventItemTemplate = (pointState) => {
+const createPointItemTemplate = (pointState) => {
   const { type, dateFrom, dateTo, basePrice, isFavorite } = pointState.point;
-  const { name: city } = pointState.destination;
-  const favoriteClass = isFavorite ? 'event__favorite-btn--active' : '';
+  const city = pointState.destination?.name ?? '';
+  const favoriteClass = isFavorite ? FAVORITE_ACTIVE_CLASS_NAME : '';
 
   return /* HTML */ `<li class="trip-events__item">
     <div class="event">
-      <time class="event__date" datetime="2019-03-20">${humanizeDueDate(dateFrom, 'MMM D')}</time>
+      <time class="event__date" datetime="${humanizeDueDate(dateFrom, DateFormat.ATTRIBUTE_DAY)}">${humanizeDueDate(dateFrom, DateFormat.POINT_DAY)}</time>
       <div class="event__type">
-        <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon" />
+        <img class="event__type-icon" width="42" height="42" src="img/icons/${escapeHtml(type)}.png" alt="Event type icon" />
       </div>
-      <h3 class="event__title">${type} ${city}</h3>
+      <h3 class="event__title">${escapeHtml(capitalize(type))} ${escapeHtml(city)}</h3>
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime="${dateFrom}">${humanizeDueDate(dateFrom, 'HH:mm')}</time>
+          <time class="event__start-time" datetime="${escapeHtml(dateFrom)}">${humanizeDueDate(dateFrom, DateFormat.TIME)}</time>
           &mdash;
-          <time class="event__end-time" datetime="${dateTo}">${humanizeDueDate(dateTo, 'HH:mm')}</time>
+          <time class="event__end-time" datetime="${escapeHtml(dateTo)}">${humanizeDueDate(dateTo, DateFormat.TIME)}</time>
         </p>
         <p class="event__duration">${getDuration(dateFrom, dateTo)}</p>
       </div>
-      <p class="event__price">&euro;&nbsp;<span class="event__price-value">${basePrice}</span></p>
+      <p class="event__price">&euro; <span class="event__price-value">${escapeHtml(basePrice)}</span></p>
       ${createOffersTemplate(pointState.offers)}
-      <button class="event__favorite-btn" type="button">
+      <button class="event__favorite-btn ${favoriteClass}" type="button">
         <span class="visually-hidden">Add to favorite</span>
-        <svg class="event__favorite-icon ${favoriteClass}" width="28" height="28" viewBox="0 0 28 28">
+        <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
           <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z" />
         </svg>
       </button>
@@ -60,42 +62,36 @@ const createEventItemTemplate = (pointState) => {
   </li>`;
 };
 
-export default class EventItemView extends AbstractView {
+export default class PointItemView extends AbstractView {
   #state = null;
   #onEditClick = null;
   #onFavoriteClick = null;
 
   constructor({ point, offers, destination, onEditClick, onFavoriteClick }) {
     super();
-    this.#state = {
-      point,
-      offers,
-      destination,
-    };
+    this.#state = { point, offers, destination };
     this.#onEditClick = onEditClick;
     this.#onFavoriteClick = onFavoriteClick;
     this.#setEventListeners();
   }
 
-  #setEventListeners = () => {
+  get template() {
+    return createPointItemTemplate(this.#state);
+  }
+
+  #setEventListeners() {
     const rollupButtonElement = this.element.querySelector(`.${ROLLUP_BUTTON_CLASS_NAME}`);
     const favoriteButtonElement = this.element.querySelector(`.${FAVORITE_BUTTON_CLASS_NAME}`);
 
     rollupButtonElement.addEventListener('click', this.#editClickHandler);
     favoriteButtonElement.addEventListener('click', this.#favoriteClickHandler);
-  };
+  }
 
-  #editClickHandler = (evt) => {
-    evt.preventDefault();
+  #editClickHandler = () => {
     this.#onEditClick();
   };
 
-  #favoriteClickHandler = (evt) => {
-    evt.preventDefault();
+  #favoriteClickHandler = () => {
     this.#onFavoriteClick();
   };
-
-  get template() {
-    return createEventItemTemplate(this.#state);
-  }
 }
