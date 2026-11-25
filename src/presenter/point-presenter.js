@@ -1,7 +1,7 @@
 import { render, replace, remove } from '../framework/render';
 import PointItemView from '../view/point-item-view';
 import EditFormView from '../view/edit-form-view';
-import { UserAction, UpdateType } from '../consts';
+import { UserAction, UpdateType, ESCAPE_KEY } from '../consts';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -18,6 +18,7 @@ export default class PointPresenter {
   #pointComponent = null;
   #editFormComponent = null;
   #mode = Mode.DEFAULT;
+  #isRequestPending = false;
 
   constructor({ pointsListContainer, tripModel, handleDataChange, handleModeChange }) {
     this.#pointsListContainer = pointsListContainer;
@@ -32,26 +33,9 @@ export default class PointPresenter {
     const prevPointComponent = this.#pointComponent;
     const prevEditFormComponent = this.#editFormComponent;
 
-    this.#pointComponent = new PointItemView({
-      point,
-      offers: this.#tripModel.getOffersById(point.type, point.offers),
-      destination: this.#tripModel.getDestinationById(point.destination),
-      onEditClick: this.#handleEditClick,
-      onFavoriteClick: this.#handleFavoriteClick,
-    });
+    this.#pointComponent = this.#createPointComponent();
 
-    this.#editFormComponent = new EditFormView({
-      point,
-      destination: this.#tripModel.getDestinationById(point.destination),
-      destinationsAll: this.#tripModel.destinations,
-      offers: this.#tripModel.offers,
-      offersType: this.#tripModel.getOffersByType(point.type),
-      onFormSubmit: this.#handleFormSubmit,
-      onCloseClick: this.#handleCloseClick,
-      onDeleteClick: this.#handleDeleteClick,
-    });
-
-    if (prevPointComponent === null || prevEditFormComponent === null) {
+    if (prevPointComponent === null) {
       render(this.#pointComponent, this.#pointsListContainer);
       return;
     }
@@ -59,12 +43,16 @@ export default class PointPresenter {
     if (this.#mode === Mode.DEFAULT) {
       replace(this.#pointComponent, prevPointComponent);
     }
+
+    // Точка перерисовалась, пока была открыта форма: форму пересоздаём с новыми данными,
+    // а новая карточка уже ждёт в #pointComponent
     if (this.#mode === Mode.EDITING) {
+      this.#editFormComponent = this.#createEditFormComponent();
       replace(this.#editFormComponent, prevEditFormComponent);
+      remove(prevEditFormComponent);
     }
 
     remove(prevPointComponent);
-    remove(prevEditFormComponent);
   }
 
   destroy() {
@@ -75,24 +63,28 @@ export default class PointPresenter {
 
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
-      this.#formReset();
       this.#replaceFormToPoint();
     }
   }
 
   setSaving() {
     if (this.#mode === Mode.EDITING) {
+      this.#isRequestPending = true;
       this.#editFormComponent.updateElement({ isDisabled: true, isSaving: true });
     }
   }
 
   setDeleting() {
     if (this.#mode === Mode.EDITING) {
+      this.#isRequestPending = true;
       this.#editFormComponent.updateElement({ isDisabled: true, isDeleting: true });
     }
   }
 
   setAborting() {
+    this.#isRequestPending = false;
+
+    // звёздочка: форма закрыта, трясём саму точку
     if (this.#mode === Mode.DEFAULT) {
       this.#pointComponent.shake();
       return;
@@ -106,12 +98,32 @@ export default class PointPresenter {
     this.#editFormComponent.shake();
   }
 
-  #handleDeleteClick = (point) => {
-    this.#handleDataChange(UserAction.DELETE_POINT, UpdateType.MINOR, point);
-  };
+  #createPointComponent() {
+    return new PointItemView({
+      point: this.#point,
+      offers: this.#tripModel.getOffersById(this.#point.type, this.#point.offers),
+      destination: this.#tripModel.getDestinationById(this.#point.destination),
+      onEditClick: this.#handleEditClick,
+      onFavoriteClick: this.#handleFavoriteClick,
+    });
+  }
+
+  #createEditFormComponent() {
+    return new EditFormView({
+      point: this.#point,
+      destination: this.#tripModel.getDestinationById(this.#point.destination),
+      destinationsAll: this.#tripModel.destinations,
+      offers: this.#tripModel.offers,
+      offersType: this.#tripModel.getOffersByType(this.#point.type),
+      onFormSubmit: this.#handleFormSubmit,
+      onCloseClick: this.#handleCloseClick,
+      onDeleteClick: this.#handleDeleteClick,
+    });
+  }
 
   #replacePointToForm() {
     this.#handleModeChange();
+    this.#editFormComponent = this.#createEditFormComponent();
     replace(this.#editFormComponent, this.#pointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
     this.#mode = Mode.EDITING;
@@ -119,35 +131,40 @@ export default class PointPresenter {
 
   #replaceFormToPoint() {
     replace(this.#pointComponent, this.#editFormComponent);
+    remove(this.#editFormComponent); // вместе с формой уничтожаются и календари
+    this.#editFormComponent = null;
+    this.#isRequestPending = false;
     document.removeEventListener('keydown', this.#escKeyDownHandler);
     this.#mode = Mode.DEFAULT;
   }
 
-  #formReset() {
-    this.#editFormComponent.reset(
-      this.#point,
-      this.#tripModel.getDestinationById(this.#point.destination),
-      this.#tripModel.getOffersByType(this.#point.type),
-    );
-  }
-
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape') {
+    if (this.#isRequestPending) {
+      return;
+    }
+
+    if (evt.key === ESCAPE_KEY) {
       evt.preventDefault();
-      this.#formReset();
       this.#replaceFormToPoint();
     }
   };
 
   #handleEditClick = () => this.#replacePointToForm();
 
+  #handleCloseClick = () => {
+    if (this.#isRequestPending) {
+      return;
+    }
+
+    this.#replaceFormToPoint();
+  };
+
   #handleFormSubmit = (point) => {
     this.#handleDataChange(UserAction.UPDATE_POINT, UpdateType.MINOR, point);
   };
 
-  #handleCloseClick = () => {
-    this.#formReset();
-    this.#replaceFormToPoint();
+  #handleDeleteClick = (point) => {
+    this.#handleDataChange(UserAction.DELETE_POINT, UpdateType.MINOR, point);
   };
 
   #handleFavoriteClick = () => {

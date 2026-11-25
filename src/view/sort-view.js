@@ -1,5 +1,5 @@
-import AbstractView from '../framework/view/abstract-view';
-import { SortType } from '../consts';
+import AbstractView from '../framework/view/abstract-view.js';
+import { SortType } from '../consts.js';
 
 const SORT_ITEMS = [
   { type: SortType.DAY, name: 'day', label: 'Day', isDisabled: false },
@@ -24,24 +24,21 @@ const createSortTemplate = (currentSortType) =>
 
 export default class SortView extends AbstractView {
   #currentSortType = null;
-  #handleSortTypeChange = null;
+  #onSortTypeChange = null;
 
-  constructor({ currentSortType, handleSortTypeChange }) {
+  constructor({ currentSortType, onSortTypeChange }) {
     super();
     this.#currentSortType = currentSortType;
-    this.#handleSortTypeChange = handleSortTypeChange;
+    this.#onSortTypeChange = onSortTypeChange;
 
     this.element.addEventListener('change', this.#sortTypeChangeHandler);
   }
 
-  #sortTypeChangeHandler = (evt) => {
-    if (evt.target.tagName !== 'INPUT') {
-      return;
-    }
-    this.#handleSortTypeChange(evt.target.dataset.sortType);
-  };
-
   get template() {
     return createSortTemplate(this.#currentSortType);
   }
+
+  #sortTypeChangeHandler = (evt) => {
+    this.#onSortTypeChange(evt.target.dataset.sortType);
+  };
 }

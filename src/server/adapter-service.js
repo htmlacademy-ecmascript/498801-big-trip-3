@@ -18,8 +18,8 @@ const adaptToClient = (point) => {
 const adaptToServer = (point) => {
   const adaptedPoint = {...point,
     'base_price': point.basePrice,
-    'date_from': point.dateFrom instanceof Date ? point.dateFrom.toISOString() : point.dateFrom,
-    'date_to': point.dateTo instanceof Date ? point.dateTo.toISOString() : point.dateTo,
+    'date_from': point.dateFrom,
+    'date_to': point.dateTo,
     'is_favorite': point.isFavorite,
   };
 
