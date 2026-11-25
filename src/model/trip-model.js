@@ -8,35 +8,43 @@ export default class TripModel extends Observable {
   #destinations = [];
   #offers = [];
 
-  constructor({pointsApiService}) {
+  constructor({ pointsApiService }) {
     super();
     this.#pointsApiService = pointsApiService;
   }
 
   async init() {
     try {
-      const points = await this.#pointsApiService.points;
-      this.#points = points.map(adaptToClient);
-      this.#offers = await this.#pointsApiService.offers;
-      this.#destinations = await this.#pointsApiService.destinations;
+      const [points, offers, destinations] = await Promise.all([
+        this.#pointsApiService.points,
+        this.#pointsApiService.offers,
+        this.#pointsApiService.destinations,
+      ]);
 
-      this._notify(UpdateType.INIT);
-    } catch(err) {
+      this.#points = points.map(adaptToClient);
+      this.#offers = offers;
+      this.#destinations = destinations;
+    } catch {
       this.#points = [];
       this.#offers = [];
       this.#destinations = [];
-
       this._notify(UpdateType.ERROR);
+      return;
     }
 
+    this._notify(UpdateType.INIT);
   }
 
   get points() {
     return structuredClone(this.#points);
   }
 
-  setPoints(points) {
-    this.#points = points;
+  get destinations() {
+    return structuredClone(this.#destinations);
+  }
+
+  get offers() {
+    return structuredClone(this.#offers);
   }
 
   async updatePoint(updateType, update) {
@@ -51,15 +59,14 @@ export default class TripModel extends Observable {
 
       this.#points = [
         ...this.#points.slice(0, index),
-        update,
+        updatedPoint,
         ...this.#points.slice(index + 1),
       ];
 
       this._notify(updateType, updatedPoint);
-    } catch(err) {
+    } catch {
       throw new Error('Can\'t update point');
     }
-
   }
 
   async addPoint(updateType, update) {
@@ -68,10 +75,8 @@ export default class TripModel extends Observable {
       const newPoint = adaptToClient(response);
 
       this.#points = [newPoint, ...this.#points];
-
       this._notify(updateType, newPoint);
-
-    } catch(err) {
+    } catch {
       throw new Error('Can\'t add point');
     }
   }
@@ -91,17 +96,9 @@ export default class TripModel extends Observable {
       ];
 
       this._notify(updateType);
-    } catch(err) {
+    } catch {
       throw new Error('Can\'t delete point');
     }
-  }
-
-  get destinations() {
-    return structuredClone(this.#destinations);
-  }
-
-  get offers() {
-    return structuredClone(this.#offers);
   }
 
   getOffersByType(type) {

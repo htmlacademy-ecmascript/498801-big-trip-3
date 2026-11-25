@@ -8,6 +8,12 @@ import PointPresenter from './point-presenter.js';
 import NewPointPresenter from './new-point-presenter.js';
 import { TextNoEvent, SortType, UserAction, UpdateType, FilterType } from '../consts.js';
 import { filter, sortByDay, sortByTime, sortByPrice } from '../utils.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class PointsPresenter {
   #eventsContainer = null;
@@ -28,6 +34,11 @@ export default class PointsPresenter {
 
   #newPointPresenter = null;
   #handleNewPointClose = null;
+
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT,
+  });
 
   constructor({ eventsContainer, tripModel, filterModel, handleNewPointClose }) {
     this.#eventsContainer = eventsContainer;
@@ -84,18 +95,37 @@ export default class PointsPresenter {
     this.#renderBoard();
   }
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#tripModel.updatePoint(updateType, update);
+        this.#pointPresenters.get(update.id)?.setSaving();
+        try {
+          await this.#tripModel.updatePoint(updateType, update);
+        } catch {
+          this.#pointPresenters.get(update.id)?.setAborting();
+        }
         break;
       case UserAction.ADD_POINT:
-        this.#tripModel.addPoint(updateType, update);
+        this.#newPointPresenter.setSaving();
+        try {
+          await this.#tripModel.addPoint(updateType, update);
+        } catch {
+          this.#newPointPresenter.setAborting();
+        }
         break;
       case UserAction.DELETE_POINT:
-        this.#tripModel.deletePoint(updateType, update);
+        this.#pointPresenters.get(update.id)?.setDeleting();
+        try {
+          await this.#tripModel.deletePoint(updateType, update);
+        } catch {
+          this.#pointPresenters.get(update.id)?.setAborting();
+        }
         break;
     }
+
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
@@ -199,7 +229,6 @@ export default class PointsPresenter {
 
     remove(this.#sortComponent);
     remove(this.#messageComponent);
-    remove(this.#loadingComponent); // ?????
 
     this.#sortComponent = null;
     this.#messageComponent = null;

@@ -80,6 +80,32 @@ export default class PointPresenter {
     }
   }
 
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editFormComponent.updateElement({ isDisabled: true, isSaving: true });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editFormComponent.updateElement({ isDisabled: true, isDeleting: true });
+    }
+  }
+
+  setAborting() {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#pointComponent.shake();
+      return;
+    }
+
+    this.#editFormComponent.updateElement({
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false,
+    });
+    this.#editFormComponent.shake();
+  }
+
   #handleDeleteClick = (point) => {
     this.#handleDataChange(UserAction.DELETE_POINT, UpdateType.MINOR, point);
   };
