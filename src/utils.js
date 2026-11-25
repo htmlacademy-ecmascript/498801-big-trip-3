@@ -1,12 +1,6 @@
 import dayjs from 'dayjs';
 import { FilterType } from './consts';
 
-// Найти и вернуть элемент по id
-const getElementById = (idNumber, elements) => {
-  const element = elements.find((el) => el.id === idNumber);
-  return element ? element : '';
-};
-
 const humanizeDueDate = (dueDate, format) => (dueDate ? dayjs(dueDate).format(format) : '');
 
 const pad = (value) => String(value).padStart(2, '0');
@@ -43,8 +37,6 @@ const generateFilters = (points) =>
     count: filterPoints(points).length,
   }));
 
-const updateItem = (items, newItem) =>
-  items.map((item) => (item.id === newItem.id ? newItem : item));
 
 // Сортировки:
 // от старых к новым по дате начала (по умолчанию)
@@ -62,4 +54,4 @@ const sortByPrice = (a, b) => b.basePrice - a.basePrice;
 
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 
-export { getElementById, humanizeDueDate, getDuration, filter, updateItem, sortByDay, sortByTime, sortByPrice, generateFilters, capitalize };
+export { humanizeDueDate, getDuration, filter, sortByDay, sortByTime, sortByPrice, generateFilters, capitalize };

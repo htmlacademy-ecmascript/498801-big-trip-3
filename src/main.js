@@ -7,6 +7,7 @@ import FilterPresenter from './presenter/filter-presenter.js';
 import TripModel from './model/trip-model';
 import FilterModel from './model/filter-model.js';
 import PointsApiService from './server/points-api-service.js';
+import { UpdateType } from './consts';
 dayjs.extend(durationPlugin);
 
 const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
@@ -48,8 +49,12 @@ newPointButton.addEventListener('click', () => {
 
 render(new InfoView(), tripMainElement, RenderPosition.AFTERBEGIN);
 
-tripModel.init().finally(() => {
-  newPointButton.disabled = false;
+tripModel.addObserver((updateType) => {
+  if (updateType === UpdateType.INIT) {
+    newPointButton.disabled = false;
+  }
 });
+
 filterPresenter.init();
 pointsPresenter.init();
+tripModel.init();
