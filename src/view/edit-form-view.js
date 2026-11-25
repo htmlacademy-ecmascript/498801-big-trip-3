@@ -93,20 +93,20 @@ const createPriceFieldTemplate = (basePrice, disabled) =>
     <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${escapeHtml(basePrice)}" pattern="^[1-9][0-9]*$" required ${disabled} />
   </div>`;
 
-const createRollupButtonTemplate = (disabled) =>
+const createRollupButtonTemplate = () =>
   /* HTML */
-  `<button class="event__rollup-btn" type="button" ${disabled}>
+  `<button class="event__rollup-btn" type="button">
     <span class="visually-hidden">Open event</span>
   </button>`;
 
 const createControlsTemplate = ({ id, isSaving, isDeleting, disabled }) => {
   const saveButtonText = isSaving ? ButtonText.SAVING : ButtonText.SAVE;
   const resetButtonText = getResetButtonText(id, isDeleting);
-  const rollupButton = id ? createRollupButtonTemplate(disabled) : '';
+  const rollupButton = id ? createRollupButtonTemplate() : '';
 
   return /* HTML */ `
     <button class="event__save-btn  btn  btn--blue" type="submit" ${disabled}>${saveButtonText}</button>
-    <button class="event__reset-btn" type="reset" ${disabled}>${resetButtonText}</button>
+    <button class="event__reset-btn" type="reset">${resetButtonText}</button>
     ${rollupButton}`;
 };
 

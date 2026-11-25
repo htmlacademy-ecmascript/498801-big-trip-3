@@ -9,7 +9,7 @@ import NewPointButtonView from './view/new-point-button-view.js';
 import { UpdateType } from './consts.js';
 
 const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
-const AUTHORIZATION = 'Basic 666zelenka';
+const AUTHORIZATION = 'Basic Xq7mP2vK9tLd4Rz';
 
 const tripMainElement = document.querySelector('.trip-main');
 const eventsElement = document.querySelector('.trip-events');
@@ -24,7 +24,7 @@ const pointsPresenter = new PointsPresenter({
   eventsContainer: eventsElement,
   tripModel,
   filterModel,
-  handleNewPointClose: () => newPointButtonComponent.setDisabled(false),
+  onNewPointClose: () => newPointButtonComponent.setDisabled(false),
 });
 
 const filterPresenter = new FilterPresenter({

@@ -7,7 +7,6 @@ const DateFormat = {
   TIME: 'HH:mm',
   ATTRIBUTE_DAY: 'YYYY-MM-DD',
   TRIP_DAY: 'D MMM',
-  TRIP_DAY_NUMBER: 'D',
 };
 
 const FilterType = {
@@ -38,11 +37,10 @@ const UserAction = {
   DELETE_POINT: 'DELETE_POINT',
 };
 
-// что перерисовывать после изменения модели
 const UpdateType = {
-  PATCH: 'PATCH', // обновилась одна точка - перерисовать только её
-  MINOR: 'MINOR', // изменился список - перерисовать список
-  MAJOR: 'MAJOR', // изменился фильтр - перерисовать всё и сбросить сортировку
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
   INIT: 'INIT',
   ERROR: 'ERROR',
 };
