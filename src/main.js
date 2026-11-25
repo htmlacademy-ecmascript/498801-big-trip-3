@@ -6,14 +6,24 @@ import PointsPresenter from './presenter/points-presenter';
 import FilterPresenter from './presenter/filter-presenter.js';
 import TripModel from './model/trip-model';
 import FilterModel from './model/filter-model.js';
+import PointsApiService from './server/points-api-service.js';
 dayjs.extend(durationPlugin);
+
+const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
+const AUTHORIZATION = 'Basic 666zelenka';
 
 const tripMainElement = document.querySelector('.trip-main');
 const eventsElement = document.querySelector('.trip-events');
 const filtersElement = document.querySelector('.trip-controls__filters');
 const newPointButton = document.querySelector('.trip-main__event-add-btn');
 
-const tripModel = new TripModel();
+newPointButton.disabled = true;
+
+const service = new PointsApiService(END_POINT, AUTHORIZATION);
+const tripModel = new TripModel({
+  pointsApiService: service
+});
+
 const filterModel = new FilterModel();
 
 const pointsPresenter = new PointsPresenter({
@@ -38,5 +48,8 @@ newPointButton.addEventListener('click', () => {
 
 render(new InfoView(), tripMainElement, RenderPosition.AFTERBEGIN);
 
+tripModel.init().finally(() => {
+  newPointButton.disabled = false;
+});
 filterPresenter.init();
 pointsPresenter.init();

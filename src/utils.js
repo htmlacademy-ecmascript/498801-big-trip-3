@@ -1,17 +1,6 @@
 import dayjs from 'dayjs';
 import { FilterType } from './consts';
 
-// Генерация случайного числа от a до b (включая a и b)
-const getRandomInteger = (a, b) => {
-  const lower = Math.ceil(Math.min(a, b));
-  const upper = Math.floor(Math.max(a, b));
-  const result = Math.random() * (upper - lower + 1) + lower;
-  return Math.floor(result);
-};
-
-// Получение случайного элемента из массива
-const getRandomArrayElement = (elements) => elements[getRandomInteger(0, elements.length - 1)];
-
 // Найти и вернуть элемент по id
 const getElementById = (idNumber, elements) => {
   const element = elements.find((el) => el.id === idNumber);
@@ -48,6 +37,12 @@ const filter = {
     points.filter((point) => dayjs(point.dateTo).isBefore(dayjs())),
 };
 
+const generateFilters = (points) =>
+  Object.entries(filter).map(([type, filterPoints]) => ({
+    type,
+    count: filterPoints(points).length,
+  }));
+
 const updateItem = (items, newItem) =>
   items.map((item) => (item.id === newItem.id ? newItem : item));
 
@@ -65,4 +60,6 @@ const sortByTime = (a, b) => {
 // по цене, от самой дорогой
 const sortByPrice = (a, b) => b.basePrice - a.basePrice;
 
-export { getRandomArrayElement, getRandomInteger, getElementById, humanizeDueDate, getDuration, filter, updateItem, sortByDay, sortByTime, sortByPrice };
+const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+
+export { getElementById, humanizeDueDate, getDuration, filter, updateItem, sortByDay, sortByTime, sortByPrice, generateFilters, capitalize };
