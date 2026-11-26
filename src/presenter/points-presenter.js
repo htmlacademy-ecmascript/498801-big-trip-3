@@ -11,8 +11,8 @@ import { TextNoEvent, SortType, UserAction, UpdateType, FilterType } from '../co
 import { filter, sortByDay, sortByTime, sortByPrice } from '../utils.js';
 
 const TimeLimit = {
-  LOWER_LIMIT: 350,
-  UPPER_LIMIT: 1000,
+  LOWER_LIMIT: 0,
+  UPPER_LIMIT: 150,
 };
 
 export default class PointsPresenter {
@@ -29,6 +29,7 @@ export default class PointsPresenter {
   #pointPresenters = new Map();
   #currentSortType = SortType.DAY;
   #isCreating = false;
+  #isRequestPending = false;
   #isLoading = true;
   #isErrorLoading = false;
 
@@ -183,10 +184,15 @@ export default class PointsPresenter {
   };
 
   #viewActionHandler = async (actionType, updateType, update) => {
+    if (this.#isRequestPending) {
+      return;
+    }
+
     const presenter = actionType === UserAction.ADD_POINT
       ? this.#newPointPresenter
       : this.#pointPresenters.get(update.id);
 
+    this.#isRequestPending = true;
     this.#uiBlocker.block();
 
     try {
@@ -207,6 +213,7 @@ export default class PointsPresenter {
     } catch {
       presenter?.setAborting();
     } finally {
+      this.#isRequestPending = false;
       this.#uiBlocker.unblock();
     }
   };

@@ -2,7 +2,6 @@ import ApiService from '../framework/api-service.js';
 import { adaptToServer } from './adapter-service.js';
 
 const Method = {
-  GET: 'GET',
   POST: 'POST',
   PUT: 'PUT',
   DELETE: 'DELETE'

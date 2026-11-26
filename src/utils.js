@@ -15,7 +15,26 @@ const TimeUnit = {
   MILLISECOND: 'millisecond',
 };
 
-const humanizeDueDate = (dueDate, format) => (dueDate ? dayjs(dueDate).format(format) : '');
+const humanizeDueDate = (dueDate, format) => (dueDate ? dayjs.utc(dueDate).format(format) : '');
+
+const convertToPickerDate = (isoDate) => {
+  if (!isoDate) {
+    return null;
+  }
+
+  const date = dayjs.utc(isoDate);
+
+  return new Date(date.year(), date.month(), date.date(), date.hour(), date.minute());
+};
+
+const convertFromPickerDate = (pickerDate) =>
+  new Date(Date.UTC(
+    pickerDate.getFullYear(),
+    pickerDate.getMonth(),
+    pickerDate.getDate(),
+    pickerDate.getHours(),
+    pickerDate.getMinutes(),
+  )).toISOString();
 
 const pad = (value) => String(value).padStart(PAD_LENGTH, PAD_SYMBOL);
 
@@ -87,6 +106,8 @@ const getTripDates = (dateFrom, dateTo) =>
 
 export {
   humanizeDueDate,
+  convertToPickerDate,
+  convertFromPickerDate,
   getDuration,
   filter,
   sortByDay,

@@ -2,7 +2,13 @@ import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { humanizeDueDate, capitalize, escapeHtml } from '../utils.js';
+import {
+  humanizeDueDate,
+  convertToPickerDate,
+  convertFromPickerDate,
+  capitalize,
+  escapeHtml,
+} from '../utils.js';
 import { DateFormat } from '../consts.js';
 
 const EDIT_FORM_CLASS_NAME = 'event--edit';
@@ -14,7 +20,6 @@ const PRICE_INPUT_CLASS_NAME = 'event__input--price';
 const AVAILABLE_OFFERS_CLASS_NAME = 'event__available-offers';
 const INPUTS_TIME_CLASS_NAME = 'event__input--time';
 const OFFER_CHECKBOX_CHECKED_SELECTOR = '.event__offer-checkbox:checked';
-
 const NEW_POINT_FORM_ID = 'new';
 
 const ButtonText = {
@@ -35,7 +40,6 @@ const getResetButtonText = (id, isDeleting) => {
   if (!id) {
     return ButtonText.CANCEL;
   }
-
   return isDeleting ? ButtonText.DELETING : ButtonText.DELETE;
 };
 
@@ -51,14 +55,12 @@ const createEventTypeTemplate = (type, offerGroups, formId, disabled) =>
       <div class="event__type-list">
         <fieldset class="event__type-group" ${disabled}>
           <legend class="visually-hidden">Event type</legend>
-
           ${offerGroups.map((group) => `<div class="event__type-item">
             <input id="event-type-${escapeHtml(group.type)}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${escapeHtml(group.type)}" ${group.type === type ? 'checked' : ''} />
             <label class="event__type-label  event__type-label--${escapeHtml(group.type)}" for="event-type-${escapeHtml(group.type)}">
               ${escapeHtml(capitalize(group.type))}
             </label>
           </div>`).join('')}
-
         </fieldset>
       </div>
     </div>`;
@@ -273,15 +275,15 @@ export default class EditFormView extends AbstractStatefulView {
 
     this.#datepickerFrom = flatpickr(startInputElement, {
       ...DATEPICKER_CONFIG,
-      defaultDate: this._state.dateFrom,
-      maxDate: this._state.dateTo,
+      defaultDate: convertToPickerDate(this._state.dateFrom),
+      maxDate: convertToPickerDate(this._state.dateTo),
       onChange: this.#dateFromChangeHandler,
     });
 
     this.#datepickerTo = flatpickr(endInputElement, {
       ...DATEPICKER_CONFIG,
-      defaultDate: this._state.dateTo,
-      minDate: this._state.dateFrom,
+      defaultDate: convertToPickerDate(this._state.dateTo),
+      minDate: convertToPickerDate(this._state.dateFrom),
       onChange: this.#dateToChangeHandler,
     });
   }
@@ -352,7 +354,6 @@ export default class EditFormView extends AbstractStatefulView {
 
   #priceChangeHandler = (evt) => {
     const value = evt.target.value.replace(/\D/g, '');
-
     evt.target.value = value;
     this._setState({ basePrice: value });
   };
@@ -362,7 +363,7 @@ export default class EditFormView extends AbstractStatefulView {
       return;
     }
 
-    this._setState({ dateFrom: userDate.toISOString() });
+    this._setState({ dateFrom: convertFromPickerDate(userDate) });
     this.#datepickerTo.set('minDate', userDate);
   };
 
@@ -371,7 +372,7 @@ export default class EditFormView extends AbstractStatefulView {
       return;
     }
 
-    this._setState({ dateTo: userDate.toISOString() });
+    this._setState({ dateTo: convertFromPickerDate(userDate) });
     this.#datepickerFrom.set('maxDate', userDate);
   };
 
@@ -388,11 +389,13 @@ export default class EditFormView extends AbstractStatefulView {
 
   static parseStateToPoint(state) {
     const point = { ...state, basePrice: Number(state.basePrice) };
+
     delete point.destinationFromId;
     delete point.offersType;
     delete point.isDisabled;
     delete point.isSaving;
     delete point.isDeleting;
+
     return point;
   }
 }

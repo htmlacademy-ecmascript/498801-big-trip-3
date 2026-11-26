@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { render } from './framework/render.js';
 import PointsPresenter from './presenter/points-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
@@ -37,6 +39,8 @@ const infoPresenter = new InfoPresenter({
   container: tripMainElement,
   tripModel,
 });
+
+dayjs.extend(utc);
 
 newPointButtonComponent.setClickHandler(() => {
   newPointButtonComponent.setDisabled(true);
